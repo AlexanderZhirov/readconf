@@ -7,11 +7,33 @@
     "license": "GPL-2.0",
     "copyright": "© Alexander Zhirov, 2023",
     "description": "Singleton for simple reading of the configuration file",
-    "targetType": "library",
-    "targetPath": "lib",
+    "configurations": [
+        {
+            "name": "library",
+            "targetType": "library",
+            "targetPath": "lib"
+        },
+        {
+            "name": "unittest",
+            "targetPath": "bin",
+            "dependencies": {
+                "silly": "~>1.1.1"
+            },
+            "importPaths": ["source","tests"],
+            "sourcePaths": ["tests"]
+        },
+        {
+            "name": "executable",
+            "targetType": "executable",
+            "targetPath": "bin",
+            "targetName": "app",
+            "importPaths": ["source","tests"],
+            "sourcePaths": ["tests"]
+        }
+    ],
     "targetName": "readconf",
     "dependencies": {
         "singlog": "~>0.1.0"
     },
-    "version": "0.0.1"
+    "version": "0.1.0"
 }

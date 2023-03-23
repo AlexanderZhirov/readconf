@@ -32,34 +32,6 @@ private:
         }
 
         /** 
-         * Get an integer value
-         * Returns: integer value or 0 if missing
-         */
-        @property int toInt() const
-        {
-            try {
-                return to!int(this.value);
-            } catch (Exception) {
-                Log.msg.warning("Failed to convert parameter to integer type: " ~ this.property);
-                return 0;
-            }
-        }
-
-        /** 
-         * Get a floating point value
-         * Returns: floating point value or 0.0 if missing
-         */
-        @property float toFloat() const
-        {
-            try {
-                return to!float(this.value);
-            } catch (Exception) {
-                Log.msg.warning("Failed to convert parameter to float type: " ~ this.property);
-                return 0.0;
-            }
-        }
-
-        /** 
          * Get a string representation of the value
          * Returns: default string value
          */
@@ -69,6 +41,17 @@ private:
         }
 
         alias toString this;
+
+        auto opCast(T)() const
+        {
+            try {
+                return this.value.to!T;
+            } catch (Exception e) {
+                Log.msg.error("Cannot convert type");
+                Log.msg.warning(e);
+                return T.init;
+            }            
+        }
     }
 
     /** 
@@ -86,8 +69,8 @@ private:
             return;
         }
 
-        string pattern = "^ *(\\w+)(( +=> +)|( += +))(?!\\/\\/)(([^ >\"'\\n#;].*?)|
-            (\"(.+?)\")|('(.+?)')){1} *( #.*?)?( ;.*?)?( \\/\\/.*)?$";
+        string pattern = "^ *(\\w+)(( +=> +)|( += +))(?!\\/\\/)(([^ >\"'\\n#;].*?)|"
+            ~ "(\"(.+?)\")|('(.+?)')){1} *( #.*?)?( ;.*?)?( \\/\\/.*)?$";
         auto regular = regex(pattern, "m");
 
         while (!configuration.eof())

@@ -2,3 +2,4 @@
 .dub
 *.o
 lib
+bin
