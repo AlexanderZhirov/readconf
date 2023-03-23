@@ -1,0 +1,17 @@
+{
+    "name": "readconf",
+    "authors": [
+        "Alexander Zhirov <alexander@zhirov.kz>"
+    ],
+    "homepage": "https://git.zhirov.kz/dlang/readconf.git",
+    "license": "GPL-2.0",
+    "copyright": "© Alexander Zhirov, 2023",
+    "description": "Singleton for simple reading of the configuration file",
+    "targetType": "library",
+    "targetPath": "lib",
+    "targetName": "readconf",
+    "dependencies": {
+        "singlog": "~>0.1.0"
+    },
+    "version": "0.0.1"
+}
