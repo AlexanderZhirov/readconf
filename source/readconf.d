@@ -28,7 +28,7 @@ private:
          */
         @property bool empty()
         {
-            return this.property.length = 0;
+            return this.property.length == 0;
         }
 
         /** 

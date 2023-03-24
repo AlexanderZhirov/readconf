@@ -13,10 +13,8 @@ unittest
     assert(Config.file.key("value7") == "1234567890");
     assert(Config.file.key("value8") == "12345.67890");
     assert(Config.file.key("value9") == "You can use large margins");
-    assert(!Config.file.key("value10").empty);
-    assert(Config.file.key("value10") == "");
-    assert(!Config.file.key("value11").empty);
-    assert(Config.file.key("value11") == "");
+    assert(Config.file.key("value10").empty);
+    assert(Config.file.key("value11").empty);
     assert(Config.file.key("value12") == "//path");
 }
 
