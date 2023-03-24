@@ -84,7 +84,7 @@ private:
                 {
                     if (match[group][0] == '\'')
                         group = 10;
-                    if (match[group][0] == '\"')
+                    else if (match[group][0] == '\"')
                         group = 8;
                 }
                 this.properties[match[1]] = PP(match[1], match[group]);
