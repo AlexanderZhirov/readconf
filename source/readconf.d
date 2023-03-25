@@ -6,6 +6,11 @@ import std.regex;
 import std.meta;
 import singlog;
 
+/** 
+ * Read config object
+ */
+alias rc = Config.file;
+
 class Config
 {
 private:
@@ -15,7 +20,7 @@ private:
     bool readed = false;
     const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
         ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
-        ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[()\\]))( |\\t)*"
+        ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[\\]))( |\\t)*"
         ~ "(( |\\t)(#|;|\\/\\/|\\/\\*).*)?$";
 
     /** 
@@ -58,9 +63,9 @@ private:
                 }
                 // values
                 int group = 11;
-                if (match[group][0] == '\'')
+                if (match[group][0] == '\"')
                     group = 14;
-                else if (match[group][0] == '\"')
+                else if (match[group][0] == '\'')
                     group = 16;
 
                 if (sectionName !in this.sections)
@@ -111,10 +116,24 @@ public:
         readConfig();
     }
 
-    @property ConfigSection section(string section = "[]")
+    /** 
+     * Get the section
+     * Params:
+     *   section = section name (default main "[]")
+     */
+    @property ConfigSection sectionName(string section = "[]")
     {
         return sections[section];
     }
+
+     /** 
+     * Section name
+     *
+     * Get the section
+     * Params:
+     *   section = section name (default main "[]")
+     */
+    alias sn = sectionName;
 }
 
 struct ConfigSection
