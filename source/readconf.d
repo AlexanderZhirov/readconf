@@ -13,6 +13,10 @@ private:
     string path;
     PP[string] properties;
     bool readed = false;
+    const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
+        ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
+        ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[()\\]))( |\\t)*"
+        ~ "(( |\\t)(#|;|\\/\\/|\\/\\*).*)?$";
 
     /** 
      * Parameter and its value with the ability to convert to the desired data type
@@ -69,8 +73,6 @@ private:
             return;
         }
 
-        string pattern = "^ *(\\w+)(( +=> +)|( += +))(?!\\/\\/)(([^ >\"'\\n#;].*?)|"
-            ~ "(\"(.+?)\")|('(.+?)')){1} *( #.*?)?( ;.*?)?( \\/\\/.*)?$";
         auto regular = regex(pattern, "m");
 
         while (!configuration.eof())
