@@ -11,52 +11,12 @@ class Config
 private:
     static Config config;
     string path;
-    PP[string] properties;
+    Partition[string] partitions;
     bool readed = false;
     const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
         ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
         ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[()\\]))( |\\t)*"
         ~ "(( |\\t)(#|;|\\/\\/|\\/\\*).*)?$";
-
-    /** 
-     * Parameter and its value with the ability to convert to the desired data type
-     */
-    struct PP
-    {
-        private string property;
-        private string value;
-
-        /** 
-         * Checking for the presence of a parameter
-         * Returns: true if the parameter is missing, otherwise false
-         */
-        @property bool empty()
-        {
-            return this.property.length == 0;
-        }
-
-        /** 
-         * Get a string representation of the value
-         * Returns: default string value
-         */
-        @property string toString() const
-        {
-            return value;
-        }
-
-        alias toString this;
-
-        auto opCast(T)() const
-        {
-            try {
-                return this.value.to!T;
-            } catch (Exception e) {
-                Log.msg.error("Cannot convert type");
-                Log.msg.warning(e);
-                return T.init;
-            }            
-        }
-    }
 
     /** 
      * Reading the configuration file
@@ -73,7 +33,7 @@ private:
             return;
         }
 
-        auto regular = regex(pattern, "m");
+        auto regular = regex(this.pattern, "m");
 
         while (!configuration.eof())
         {
@@ -134,26 +94,88 @@ public:
         readConfig();
     }
 
+    Partition part(string partishion = "")
+    {
+
+    }
+}
+
+/** 
+ * Parameter and its value with the ability to convert to the desired data type
+ */
+struct Parameter
+{
+    private string property;
+    private string value;
+
+    /** 
+     * Checking for the presence of a parameter
+     * Returns: true if the parameter is missing, otherwise false
+     */
+    @property bool empty()
+    {
+        return this.property.length == 0 || this.value.length == 0;
+    }
+
+    /** 
+     * Get a string representation of the value
+     * Returns: default string value
+     */
+    @property string toString() const
+    {
+        return this.value;
+    }
+
+    alias toString this;
+
+    auto opCast(T)() const
+    {
+        try {
+            return this.value.to!T;
+        } catch (Exception e) {
+            Log.msg.error("Cannot convert type");
+            Log.msg.warning(e);
+            return T.init;
+        }            
+    }
+}
+
+struct Partition
+{
+    private string name = "[]";
+    private Parameter[string] parameters;
+
+    /** 
+     * Checking for the presence of a partition
+     * Returns: true if the parameter is missing, otherwise false
+     */
+    @property bool empty()
+    {
+        return this.parameters.length == 0;
+    }
+
     /** 
      * Get the parameter value
      * Params:
      *   key = parameter from the configuration file
      * Returns: the value of the parameter in the PP structure view
      */
-    PP key(string key)
+    Parameter key(string key)
     {
-        if (this.readed)
-            return key in this.properties ? this.properties[key] : PP();
-        Log.msg.warning("The configuration file was not read!");
-        return PP();
+        return key in this.parameters ? this.parameters[key] : Parameter();
     }
 
     /** 
      * Get all keys and their values
      * Returns: collection of properties structures PP
      */
-    PP[string] keys()
+    Parameter[string] keys()
     {
-        return this.properties;
+        return this.parameters;
+    }
+
+    bool add(Parameter parameter)
+    {
+
     }
 }
