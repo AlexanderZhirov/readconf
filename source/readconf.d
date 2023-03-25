@@ -14,10 +14,21 @@ alias rc = Config.file;
 class Config
 {
 private:
+    enum {
+        GROUP_PROPERTY            = 4,
+        GROUP_VALUE_1             = 11, // string
+        GROUP_VALUE_2             = 14, // "strin"
+        GROUP_VALUE_3             = 16, // 'string'
+        GROUP_SECTION_OTHER_OUTER = 17, // "[string]"
+        GROUP_SECTION_OTHER_INNER = 18, // "[string]"
+        GROUP_SECTION_MAIN        = 20, // "[]"
+    }
+
     static Config config;
     string path;
-    ConfigSection[string] sections;
     bool readed = false;
+    ConfigSection[string] sections;
+
     const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
         ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
         ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[\\]))( |\\t)*"
@@ -33,14 +44,14 @@ private:
         try {
             configuration = File(this.path, "r");
         } catch (Exception e) {
-            Log.msg.error("Unable to open the configuration file " ~ this.path);
-            Log.msg.warning(e);
+            Log.msg.warning("Unable to open the configuration file " ~ this.path);
+            Log.msg.error(e);
             return false;
         }
 
         auto regular = regex(this.pattern, "m");
 
-        // if main section
+        // reading from the main section
         string sectionName = "[]";
 
         while (!configuration.eof())
@@ -50,28 +61,28 @@ private:
             if (match)
             {
                 // if again main section
-                if (match[20].length)
+                if (match[GROUP_SECTION_MAIN].length)
                 {
-                    sectionName = match[20];
+                    sectionName = match[GROUP_SECTION_MAIN];
                     continue;
                 }
-                // if other section
-                if (match[17].length)
+                if (match[GROUP_SECTION_OTHER_OUTER].length)
                 {
-                    sectionName = match[18];
+                    sectionName = match[GROUP_SECTION_OTHER_INNER];
                     continue;
                 }
-                // values
-                int group = 11;
+
+                int group = GROUP_VALUE_1;
+
                 if (match[group][0] == '\"')
-                    group = 14;
+                    group = GROUP_VALUE_2;
                 else if (match[group][0] == '\'')
-                    group = 16;
+                    group = GROUP_VALUE_3;
 
                 if (sectionName !in this.sections)
                     this.sections[sectionName] = ConfigSection(sectionName);
                 
-                this.sections[sectionName].add(ConfigParameter(match[4], match[group]));
+                this.sections[sectionName].add(ConfigParameter(match[GROUP_PROPERTY], match[group]));
             }
         }
 
@@ -79,8 +90,8 @@ private:
             configuration.close();
             this.readed = true;
         } catch (Exception e) {
-            Log.msg.error("Unable to close the configuration file " ~ this.path);
-            Log.msg.warning(e);
+            Log.msg.warning("Unable to close the configuration file " ~ this.path);
+            Log.msg.error(e);
             this.readed = false;
         }
 
@@ -111,11 +122,7 @@ public:
     {
         this.path = path;
         if (!path.exists)
-        {
-            Log.msg.error("The configuration file does not exist: " ~ path);
-            return false;
-        }
-
+            throw new Exception("The configuration file does not exist: " ~ path);
         return readConfig();
     }
 
@@ -214,8 +221,8 @@ struct ConfigParameter
         try {
             return this.value.to!T;
         } catch (Exception e) {
-            Log.msg.error("Cannot convert type");
-            Log.msg.warning(e);
+            Log.msg.warning("Cannot convert type");
+            Log.msg.error(e);
             return T.init;
         }            
     }
