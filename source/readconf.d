@@ -11,7 +11,7 @@ class Config
 private:
     static Config config;
     string path;
-    Partition[string] partitions;
+    ConfigSection[string] sections;
     bool readed = false;
     const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
         ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
@@ -35,22 +35,39 @@ private:
 
         auto regular = regex(this.pattern, "m");
 
+        // if main section
+        string sectionName = "[]";
+
         while (!configuration.eof())
         {
             string line = configuration.readln();
             auto match = matchFirst(line, regular);
             if (match)
             {
-                int group = 5;
-                if (match[group].length)
+                // if again main section
+                if (match[20].length)
                 {
-                    if (match[group][0] == '\'')
-                        group = 10;
-                    else if (match[group][0] == '\"')
-                        group = 8;
+                    sectionName = match[20];
+                    continue;
                 }
-                this.properties[match[1]] = PP(match[1], match[group]);
-            }                
+                // if other section
+                if (match[17].length)
+                {
+                    sectionName = match[18];
+                    continue;
+                }
+                // values
+                int group = 11;
+                if (match[group][0] == '\'')
+                    group = 14;
+                else if (match[group][0] == '\"')
+                    group = 16;
+
+                if (sectionName !in this.sections)
+                    this.sections[sectionName] = ConfigSection(sectionName);
+                
+                this.sections[sectionName].add(ConfigParameter(match[4], match[group]));
+            }
         }
 
         try {
@@ -94,16 +111,56 @@ public:
         readConfig();
     }
 
-    Partition part(string partishion = "")
+    @property ConfigSection section(string section = "[]")
     {
+        return sections[section];
+    }
+}
 
+struct ConfigSection
+{
+    private string name = "[]";
+    private ConfigParameter[string] parameters;
+
+    /** 
+     * Checking for the presence of a partition
+     * Returns: true if the parameter is missing, otherwise false
+     */
+    @property bool empty()
+    {
+        return this.parameters.length == 0;
+    }
+
+    /** 
+     * Get the parameter value
+     * Params:
+     *   key = parameter from the configuration file
+     * Returns: the value of the parameter in the PP structure view
+     */
+    ConfigParameter key(string key)
+    {
+        return key in this.parameters ? this.parameters[key] : ConfigParameter();
+    }
+
+    /** 
+     * Get all keys and their values
+     * Returns: collection of properties structures PP
+     */
+    ConfigParameter[string] keys()
+    {
+        return this.parameters;
+    }
+
+    void add(ConfigParameter parameter)
+    {
+        this.parameters[parameter.property] = parameter;
     }
 }
 
 /** 
  * Parameter and its value with the ability to convert to the desired data type
  */
-struct Parameter
+struct ConfigParameter
 {
     private string property;
     private string value;
@@ -137,45 +194,5 @@ struct Parameter
             Log.msg.warning(e);
             return T.init;
         }            
-    }
-}
-
-struct Partition
-{
-    private string name = "[]";
-    private Parameter[string] parameters;
-
-    /** 
-     * Checking for the presence of a partition
-     * Returns: true if the parameter is missing, otherwise false
-     */
-    @property bool empty()
-    {
-        return this.parameters.length == 0;
-    }
-
-    /** 
-     * Get the parameter value
-     * Params:
-     *   key = parameter from the configuration file
-     * Returns: the value of the parameter in the PP structure view
-     */
-    Parameter key(string key)
-    {
-        return key in this.parameters ? this.parameters[key] : Parameter();
-    }
-
-    /** 
-     * Get all keys and their values
-     * Returns: collection of properties structures PP
-     */
-    Parameter[string] keys()
-    {
-        return this.parameters;
-    }
-
-    bool add(Parameter parameter)
-    {
-
     }
 }
