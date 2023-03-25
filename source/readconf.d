@@ -26,7 +26,7 @@ private:
     /** 
      * Reading the configuration file
      */
-    void readConfig()
+    bool readConfig()
     {
         File configuration;
 
@@ -35,7 +35,7 @@ private:
         } catch (Exception e) {
             Log.msg.error("Unable to open the configuration file " ~ this.path);
             Log.msg.warning(e);
-            return;
+            return false;
         }
 
         auto regular = regex(this.pattern, "m");
@@ -81,8 +81,10 @@ private:
         } catch (Exception e) {
             Log.msg.error("Unable to close the configuration file " ~ this.path);
             Log.msg.warning(e);
-            return;
+            this.readed = false;
         }
+
+        return this.readed;
     }
 
     this() {}
@@ -105,15 +107,16 @@ public:
      * Params:
      *   path = the path to the configuration file
      */
-    void read(string path)
+    bool read(string path)
     {
         this.path = path;
         if (!path.exists)
         {
             Log.msg.error("The configuration file does not exist: " ~ path);
-            return;
+            return false;
         }
-        readConfig();
+
+        return readConfig();
     }
 
     /** 
@@ -123,7 +126,7 @@ public:
      */
     @property ConfigSection sectionName(string section = "[]")
     {
-        return sections[section];
+        return section in sections ? sections[section] : ConfigSection();
     }
 
      /** 
@@ -170,8 +173,10 @@ struct ConfigSection
         return this.parameters;
     }
 
-    void add(ConfigParameter parameter)
+    private void add(ConfigParameter parameter)
     {
+        if (parameter.property in parameters)
+            Log.msg.warning("The parameter exists but will be overwritten");
         this.parameters[parameter.property] = parameter;
     }
 }
