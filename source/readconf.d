@@ -6,72 +6,53 @@ import std.regex;
 import std.meta;
 import singlog;
 
+/** 
+ * Read config object
+ */
+alias rc = Config.file;
+
 class Config
 {
 private:
+    enum {
+        GROUP_PROPERTY            = 4,
+        GROUP_VALUE_1             = 11, // string
+        GROUP_VALUE_2             = 14, // "strin"
+        GROUP_VALUE_3             = 16, // 'string'
+        GROUP_SECTION_OTHER_OUTER = 17, // "[string]"
+        GROUP_SECTION_OTHER_INNER = 18, // "[string]"
+        GROUP_SECTION_MAIN        = 20, // "[]"
+    }
+
     static Config config;
     string path;
-    PP[string] properties;
     bool readed = false;
+    ConfigSection[string] sections;
 
-    /** 
-     * Parameter and its value with the ability to convert to the desired data type
-     */
-    struct PP
-    {
-        private string property;
-        private string value;
-
-        /** 
-         * Checking for the presence of a parameter
-         * Returns: true if the parameter is missing, otherwise false
-         */
-        @property bool empty()
-        {
-            return this.property.length == 0;
-        }
-
-        /** 
-         * Get a string representation of the value
-         * Returns: default string value
-         */
-        @property string toString() const
-        {
-            return value;
-        }
-
-        alias toString this;
-
-        auto opCast(T)() const
-        {
-            try {
-                return this.value.to!T;
-            } catch (Exception e) {
-                Log.msg.error("Cannot convert type");
-                Log.msg.warning(e);
-                return T.init;
-            }            
-        }
-    }
+    const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
+        ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
+        ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[\\]))( |\\t)*"
+        ~ "(( |\\t)(#|;|\\/\\/|\\/\\*).*)?$";
 
     /** 
      * Reading the configuration file
      */
-    void readConfig()
+    bool readConfig()
     {
         File configuration;
 
         try {
             configuration = File(this.path, "r");
         } catch (Exception e) {
-            Log.msg.error("Unable to open the configuration file " ~ this.path);
-            Log.msg.warning(e);
-            return;
+            Log.msg.warning("Unable to open the configuration file " ~ this.path);
+            Log.msg.error(e);
+            return false;
         }
 
-        string pattern = "^ *(\\w+)(( +=> +)|( += +))(?!\\/\\/)(([^ >\"'\\n#;].*?)|"
-            ~ "(\"(.+?)\")|('(.+?)')){1} *( #.*?)?( ;.*?)?( \\/\\/.*)?$";
-        auto regular = regex(pattern, "m");
+        auto regular = regex(this.pattern, "m");
+
+        // reading from the main section
+        string sectionName = "[]";
 
         while (!configuration.eof())
         {
@@ -79,26 +60,42 @@ private:
             auto match = matchFirst(line, regular);
             if (match)
             {
-                int group = 5;
-                if (match[group].length)
+                // if again main section
+                if (match[GROUP_SECTION_MAIN].length)
                 {
-                    if (match[group][0] == '\'')
-                        group = 10;
-                    else if (match[group][0] == '\"')
-                        group = 8;
+                    sectionName = match[GROUP_SECTION_MAIN];
+                    continue;
                 }
-                this.properties[match[1]] = PP(match[1], match[group]);
-            }                
+                if (match[GROUP_SECTION_OTHER_OUTER].length)
+                {
+                    sectionName = match[GROUP_SECTION_OTHER_INNER];
+                    continue;
+                }
+
+                int group = GROUP_VALUE_1;
+
+                if (match[group][0] == '\"')
+                    group = GROUP_VALUE_2;
+                else if (match[group][0] == '\'')
+                    group = GROUP_VALUE_3;
+
+                if (sectionName !in this.sections)
+                    this.sections[sectionName] = ConfigSection(sectionName);
+                
+                this.sections[sectionName].add(ConfigParameter(match[GROUP_PROPERTY], match[group]));
+            }
         }
 
         try {
             configuration.close();
             this.readed = true;
         } catch (Exception e) {
-            Log.msg.error("Unable to close the configuration file " ~ this.path);
-            Log.msg.warning(e);
-            return;
+            Log.msg.warning("Unable to close the configuration file " ~ this.path);
+            Log.msg.error(e);
+            this.readed = false;
         }
+
+        return this.readed;
     }
 
     this() {}
@@ -121,15 +118,46 @@ public:
      * Params:
      *   path = the path to the configuration file
      */
-    void read(string path)
+    bool read(string path)
     {
         this.path = path;
         if (!path.exists)
-        {
-            Log.msg.error("The configuration file does not exist: " ~ path);
-            return;
-        }
-        readConfig();
+            throw new Exception("The configuration file does not exist: " ~ path);
+        return readConfig();
+    }
+
+    /** 
+     * Get the section
+     * Params:
+     *   section = section name (default main "[]")
+     */
+    @property ConfigSection sectionName(string section = "[]")
+    {
+        return section in sections ? sections[section] : ConfigSection();
+    }
+
+     /** 
+     * Section name
+     *
+     * Get the section
+     * Params:
+     *   section = section name (default main "[]")
+     */
+    alias sn = sectionName;
+}
+
+struct ConfigSection
+{
+    private string name = "[]";
+    private ConfigParameter[string] parameters;
+
+    /** 
+     * Checking for the presence of a partition
+     * Returns: true if the parameter is missing, otherwise false
+     */
+    @property bool empty()
+    {
+        return this.parameters.length == 0;
     }
 
     /** 
@@ -138,20 +166,64 @@ public:
      *   key = parameter from the configuration file
      * Returns: the value of the parameter in the PP structure view
      */
-    PP key(string key)
+    ConfigParameter key(string key)
     {
-        if (this.readed)
-            return key in this.properties ? this.properties[key] : PP();
-        Log.msg.warning("The configuration file was not read!");
-        return PP();
+        return key in this.parameters ? this.parameters[key] : ConfigParameter();
     }
 
     /** 
      * Get all keys and their values
      * Returns: collection of properties structures PP
      */
-    PP[string] keys()
+    ConfigParameter[string] keys()
     {
-        return this.properties;
+        return this.parameters;
+    }
+
+    private void add(ConfigParameter parameter)
+    {
+        if (parameter.property in parameters)
+            Log.msg.warning("The parameter exists but will be overwritten");
+        this.parameters[parameter.property] = parameter;
+    }
+}
+
+/** 
+ * Parameter and its value with the ability to convert to the desired data type
+ */
+struct ConfigParameter
+{
+    private string property;
+    private string value;
+
+    /** 
+     * Checking for the presence of a parameter
+     * Returns: true if the parameter is missing, otherwise false
+     */
+    @property bool empty()
+    {
+        return this.property.length == 0 || this.value.length == 0;
+    }
+
+    /** 
+     * Get a string representation of the value
+     * Returns: default string value
+     */
+    @property string toString() const
+    {
+        return this.value;
+    }
+
+    alias toString this;
+
+    auto opCast(T)() const
+    {
+        try {
+            return this.value.to!T;
+        } catch (Exception e) {
+            Log.msg.warning("Cannot convert type");
+            Log.msg.error(e);
+            return T.init;
+        }            
     }
 }
