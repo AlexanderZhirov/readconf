@@ -27,7 +27,7 @@ private:
     static Config config;
     string path;
     bool readed = false;
-    ConfigSection[string] sections;
+    ConfigFile[string] configs;
 
     const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
         ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
@@ -37,7 +37,7 @@ private:
     /** 
      * Reading the configuration file
      */
-    bool readConfig()
+    bool readConfig(const string configName)
     {
         File configuration;
 
@@ -48,6 +48,9 @@ private:
             Log.msg.error(e);
             return false;
         }
+
+        if (configName !in this.configs)
+            this.configs[configName] = ConfigFile(configName);
 
         auto regular = regex(this.pattern, "m");
 
@@ -79,10 +82,12 @@ private:
                 else if (match[group][0] == '\'')
                     group = GROUP_VALUE_3;
 
-                if (sectionName !in this.sections)
-                    this.sections[sectionName] = ConfigSection(sectionName);
+                this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PROPERTY], match[group]));
+                    
+                // if (sectionName !in this.sections)
+                //     this.sections[sectionName] = ConfigSection(sectionName);
                 
-                this.sections[sectionName].add(ConfigParameter(match[GROUP_PROPERTY], match[group]));
+                // this.sections[sectionName].add(ConfigParameter(match[GROUP_PROPERTY], match[group]));
             }
         }
 
@@ -92,6 +97,7 @@ private:
         } catch (Exception e) {
             Log.msg.warning("Unable to close the configuration file " ~ this.path);
             Log.msg.error(e);
+            this.configs.remove(configName);
             this.readed = false;
         }
 
@@ -118,13 +124,50 @@ public:
      * Params:
      *   path = the path to the configuration file
      */
-    bool read(string path)
+    bool read(string path, string configName = "")
     {
         this.path = path;
         if (!path.exists)
             throw new Exception("The configuration file does not exist: " ~ path);
-        return readConfig();
+        if (configName.length == 0)
+            configName = path.baseName();
+        if (configName in configs)
+            throw new Exception("The configuration file with this name has already been read");
+        return readConfig(configName);
     }
+
+    /** 
+     * Get the section
+     * Params:
+     *   section = section name (default main "[]")
+     */
+    @property ConfigFile configFile(string configName = "")
+    {
+        if (configName.length == 0)
+        {
+            if (configs.length == 1)
+                return configs[configs.byKey.front];
+            else
+                throw new Exception("You must explicitly specify the name of the configuration file");
+        }
+
+        return configName in configs ? configs[configName] : ConfigFile();
+    }
+
+     /** 
+     * Config file
+     *
+     * Get the config file
+     * Params:
+     *   configName = config name (by default the name of the configuration file)
+     */
+    alias cf = configFile;
+}
+
+struct ConfigFile
+{
+    private string name = "[]";
+    private ConfigSection[string] sections;
 
     /** 
      * Get the section
@@ -144,6 +187,14 @@ public:
      *   section = section name (default main "[]")
      */
     alias sn = sectionName;
+
+    private void add(string sectionName, ConfigParameter parameter)
+    {
+        if (sectionName !in this.sections)
+            this.sections[sectionName] = ConfigSection(sectionName);
+
+        this.sections[sectionName].add(parameter);
+    }
 }
 
 struct ConfigSection
