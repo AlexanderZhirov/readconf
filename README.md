@@ -2,6 +2,13 @@
 
 Singleton for reading the configuration file required for your program.
 
+## What can do
+
+1. Separation of parameter and value by separators `=` and `=>`
+2. Commenting on lines using special characters `;`, `#`, `//`, `/*`
+3. Support for sections for describing parameter blocks (sections are set by the name in `[]`)
+4. Support for spaces and tabs for visual separation
+
 ## Quick start
 
 The `settings.conf` file (see the [tests](tests/)):
@@ -45,3 +52,7 @@ value1 => this value will be in the new section
 value3 => good value!
 this value will be in the new section
 ```
+
+## Dub
+
+Add a dependency on `"readconf": "~>0.2.0"`
