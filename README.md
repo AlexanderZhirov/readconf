@@ -16,27 +16,32 @@ import std.stdio;
 
 void main()
 {
-    Config.file.read("./settings.conf");
+    rc.read("./settings.conf");
 
-    foreach (key, param; Config.file.keys())
+    foreach (key, param; rc.sn.keys())
         writefln("%s => %s", key, param);
 
-    writeln(Config.file.key("value1"));
+    writeln(rc.sn.key("value1"));
+
+    foreach (key, param; rc.sn("part2").keys())
+        writefln("%s => %s", key, param);
+
+    writeln(rc.sn("part2").key("value1"));
 }
 ```
 
 Result:
 
 ```
-value1 => This is the full value
-value2 => Take the value in quotation marks
-value3 => Or take in apostrophes
-value4 => You can also comment
-value5 => So you can also comment
-value6 => "And you can even do that!"
-value7 => 1234567890
-value8 => 12345.67890
-value9 => You can use large margins
-value12 => //path
-This is the full value
+value1 => text without quotes
+value2 => Yes!
+value3 => value in apostrophes
+value4 => 1000
+value5 => 0.000
+value7 => //path
+value8 => "Hey!"
+text without quotes
+value1 => this value will be in the new section
+value3 => good value!
+this value will be in the new section
 ```

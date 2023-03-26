@@ -4,28 +4,31 @@ unittest
 {
     rc.read("./tests/settings.conf");
 
-    assert(rc.sn.key("value1") == "This is the full value");
-    assert(rc.sn.key("value2") == "Take the value in quotation marks");
-    assert(rc.sn.key("value3") == "Or take in apostrophes");
-    assert(rc.sn.key("value4") == "You can also comment");
-    assert(rc.sn.key("value5") == "So you can also comment");
-    assert(rc.sn.key("value6") == "\"And you can even do that!\"");
-    assert(rc.sn.key("value7") == "1234567890");
-    assert(rc.sn.key("value8") == "12345.67890");
-    assert(rc.sn.key("value9") == "You can use large margins");
-    assert(rc.sn.key("value10").empty);
-    assert(rc.sn.key("value11").empty);
-    assert(rc.sn.key("value12") == "//path");
+    assert(rc.sn.key("value1") == "text without quotes");
+    assert(rc.sn.key("value2") == "Yes!");
+    assert(rc.sn.key("value3") == "value in apostrophes");
+    assert(rc.sn.key("value4") == "1000");
+    assert(rc.sn.key("value5") == "0.000");
+    assert(rc.sn.key("value7") == "//path");
+    assert(rc.sn.key("value8") == "\"Hey!\"");
+    assert(rc.sn("part2").key("value1") == "this value will be in the new section");
+    assert(rc.sn("part2").key("value3") == "good value!");
+    assert(rc.sn("part3").key("value1") == "-2");
+    assert(rc.sn("part3").key("value3") == "100");
 }
-
 
 // void main()
 // {
 //     import std.stdio;
-//     Config.file.read("./tests/settings.conf");
+//     rc.read("./tests/settings.conf");
 
-//     foreach (key, param; Config.file.keys())
+//     foreach (key, param; rc.sn.keys())
 //         writefln("%s => %s", key, param);
 
-//     writeln(Config.file.key("value1"));
+//     writeln(rc.sn.key("value1"));
+
+//     foreach (key, param; rc.sn("part2").keys())
+//         writefln("%s => %s", key, param);
+
+//     writeln(rc.sn("part2").key("value1"));
 // }
