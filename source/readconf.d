@@ -63,34 +63,30 @@ private:
         {
             string line = configuration.readln();
             auto match = matchFirst(line, regular);
-            if (match)
+
+            if (match.length == 0)
+                continue;
+            
+            // if again main section
+            if (match[GROUP_SECTION_MAIN].length)
             {
-                // if again main section
-                if (match[GROUP_SECTION_MAIN].length)
-                {
-                    sectionName = match[GROUP_SECTION_MAIN];
-                    continue;
-                }
-                if (match[GROUP_SECTION_OTHER_OUTER].length)
-                {
-                    sectionName = match[GROUP_SECTION_OTHER_INNER];
-                    continue;
-                }
-
-                int group = GROUP_VALUE_1;
-
-                if (match[group][0] == '\"')
-                    group = GROUP_VALUE_2;
-                else if (match[group][0] == '\'')
-                    group = GROUP_VALUE_3;
-
-                this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PROPERTY], match[group]));
-                    
-                // if (sectionName !in this.sections)
-                //     this.sections[sectionName] = ConfigSection(sectionName);
-                
-                // this.sections[sectionName].add(ConfigParameter(match[GROUP_PROPERTY], match[group]));
+                sectionName = match[GROUP_SECTION_MAIN];
+                continue;
             }
+            if (match[GROUP_SECTION_OTHER_OUTER].length)
+            {
+                sectionName = match[GROUP_SECTION_OTHER_INNER];
+                continue;
+            }
+
+            int group = GROUP_VALUE_1;
+
+            if (match[group][0] == '\"')
+                group = GROUP_VALUE_2;
+            else if (match[group][0] == '\'')
+                group = GROUP_VALUE_3;
+
+            this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PROPERTY], match[group]));
         }
 
         try {
