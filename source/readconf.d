@@ -11,6 +11,8 @@ import singlog;
  */
 alias rc = Config.file;
 
+private const string mainSection = "[]";
+
 class Config
 {
 private:
@@ -55,7 +57,7 @@ private:
         auto regular = regex(this.pattern, "m");
 
         // reading from the main section
-        string sectionName = "[]";
+        string sectionName = mainSection;
 
         while (!configuration.eof())
         {
@@ -151,7 +153,7 @@ public:
                 throw new Exception("You must explicitly specify the name of the configuration file");
         }
 
-        return configName in configs ? configs[configName] : ConfigFile();
+        return configName in configs ? configs[configName] : ConfigFile(configName);
     }
 
      /** 
@@ -166,7 +168,7 @@ public:
 
 struct ConfigFile
 {
-    private string name = "[]";
+    private string name;
     private ConfigSection[string] sections;
 
     @property bool exist()
@@ -179,13 +181,13 @@ struct ConfigFile
      * Params:
      *   section = section name (default main "[]")
      */
-    @property ConfigSection sectionName(string section = "[]")
+    @property ConfigSection sectionName(string section = mainSection)
     {
         if (!this.exist)
             throw new Exception("The configuration file does not exist");
-        if (sections.length == 1)
+        if (section == mainSection && sections.length == 1)
             return sections[sections.byKey.front];
-        return section in sections ? sections[section] : ConfigSection();
+        return section in sections ? sections[section] : ConfigSection(section);
     }
 
      /** 
@@ -208,7 +210,7 @@ struct ConfigFile
 
 struct ConfigSection
 {
-    private string name = "[]";
+    private string name = mainSection;
     private ConfigParameter[string] parameters;
 
     /** 
@@ -230,7 +232,7 @@ struct ConfigSection
     {
         if (this.empty)
             throw new Exception("The selected section has no parameters or does not exist");
-        return key in this.parameters ? this.parameters[key] : ConfigParameter();
+        return key in this.parameters ? this.parameters[key] : ConfigParameter(key);
     }
 
     /** 
@@ -264,7 +266,7 @@ struct ConfigParameter
      */
     @property bool empty()
     {
-        return this.property.length == 0 || this.value.length == 0;
+        return this.value.length == 0;
     }
 
     /** 
