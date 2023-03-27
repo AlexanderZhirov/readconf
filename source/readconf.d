@@ -169,6 +169,11 @@ struct ConfigFile
     private string name = "[]";
     private ConfigSection[string] sections;
 
+    @property bool exist()
+    {
+        return this.sections.length > 0;
+    }
+
     /** 
      * Get the section
      * Params:
@@ -176,6 +181,10 @@ struct ConfigFile
      */
     @property ConfigSection sectionName(string section = "[]")
     {
+        if (!this.exist)
+            throw new Exception("The configuration file does not exist");
+        if (sections.length == 1)
+            return sections[sections.byKey.front];
         return section in sections ? sections[section] : ConfigSection();
     }
 
@@ -219,6 +228,8 @@ struct ConfigSection
      */
     ConfigParameter key(string key)
     {
+        if (this.empty)
+            throw new Exception("The selected section has no parameters or does not exist");
         return key in this.parameters ? this.parameters[key] : ConfigParameter();
     }
 
