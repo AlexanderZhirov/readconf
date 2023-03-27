@@ -164,6 +164,20 @@ public:
      *   configName = config name (by default the name of the configuration file)
      */
     alias cf = configFile;
+
+    @property ConfigFile opIndex(string configName = "")
+    {
+        if (configName.length == 0)
+        {
+            if (configs.length == 1)
+                return configs[configs.byKey.front];
+            else
+                throw new Exception("More than one configuration file has been read. "
+                    ~ "It is necessary to specify the name of a specific");
+        }
+
+        return configName in configs ? configs[configName] : ConfigFile(configName);
+    }
 }
 
 struct ConfigFile
@@ -187,6 +201,8 @@ struct ConfigFile
             throw new Exception("The configuration file does not exist");
         if (section == mainSection && sections.length == 1)
             return sections[sections.byKey.front];
+        if (section.length == 0)
+            section = mainSection;
         return section in sections ? sections[section] : ConfigSection(section);
     }
 
@@ -205,6 +221,17 @@ struct ConfigFile
             this.sections[sectionName] = ConfigSection(sectionName);
 
         this.sections[sectionName].add(parameter);
+    }
+
+    @property ConfigSection opIndex(string section = mainSection)
+    {
+        if (!this.exist)
+            throw new Exception("The configuration file does not exist");
+        if (section == mainSection && sections.length == 1)
+            return sections[sections.byKey.front];
+        if (section.length == 0)
+            section = mainSection;
+        return section in sections ? sections[section] : ConfigSection(section);
     }
 }
 
@@ -230,6 +257,8 @@ struct ConfigSection
      */
     ConfigParameter key(string key)
     {
+        if (key.length == 0)
+            throw new Exception("The key cannot be empty");
         if (this.empty)
             throw new Exception("The selected section has no parameters or does not exist");
         return key in this.parameters ? this.parameters[key] : ConfigParameter(key);
@@ -249,6 +278,15 @@ struct ConfigSection
         if (parameter.property in parameters)
             Log.msg.warning("The parameter exists but will be overwritten");
         this.parameters[parameter.property] = parameter;
+    }
+
+    ConfigParameter opIndex(string key)
+    {
+        if (key.length == 0)
+            throw new Exception("The key cannot be empty");
+        if (this.empty)
+            throw new Exception("The selected section has no parameters or does not exist");
+        return key in this.parameters ? this.parameters[key] : ConfigParameter(key);
     }
 }
 
