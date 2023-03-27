@@ -1,4 +1,8 @@
-# readconf
+<p align="center">
+    <img src="img/logo.png" width=320>
+</p>
+
+<h1 align="center">readconf</h1>
 
 Singleton for reading the configuration file required for your program.
 
