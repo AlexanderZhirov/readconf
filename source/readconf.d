@@ -46,8 +46,8 @@ private:
         try {
             configuration = File(this.path, "r");
         } catch (Exception e) {
-            Log.msg.warning("Unable to open the configuration file " ~ this.path);
-            Log.msg.error(e);
+            log.w("Unable to open the configuration file " ~ this.path);
+            log.e(e);
             return false;
         }
 
@@ -93,8 +93,8 @@ private:
             configuration.close();
             this.readed = true;
         } catch (Exception e) {
-            Log.msg.warning("Unable to close the configuration file " ~ this.path);
-            Log.msg.error(e);
+            log.w("Unable to close the configuration file " ~ this.path);
+            log.e(e);
             this.configs.remove(configName);
             this.readed = false;
         }
@@ -272,7 +272,7 @@ struct ConfigSection
     private void add(ConfigParameter parameter)
     {
         if (parameter.property in parameters)
-            Log.msg.warning("The parameter exists but will be overwritten");
+            log.w("The parameter exists but will be overwritten");
         this.parameters[parameter.property] = parameter;
     }
 
@@ -319,8 +319,8 @@ struct ConfigParameter
         try {
             return this.value.to!T;
         } catch (Exception e) {
-            Log.msg.warning("Cannot convert type");
-            Log.msg.error(e);
+            log.w("Cannot convert type");
+            log.e(e);
             return T.init;
         }            
     }
