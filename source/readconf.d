@@ -7,7 +7,10 @@ import std.meta;
 import singlog;
 
 /** 
- * Read config object
+ * **Get an object to read the configuration file**
+ * 
+ * - The `read()` will allow you to read the configuration file
+ * - `cf()` or `configFile()` will allow you to refer to the read file to get the parameters
  */
 alias rc = Config.file;
 
@@ -17,13 +20,13 @@ class Config
 {
 private:
     enum {
-        GROUP_PROPERTY            = 4,
+        GROUP_PARAMETER           = 4,
         GROUP_VALUE_1             = 11, // string
         GROUP_VALUE_2             = 14, // "strin"
         GROUP_VALUE_3             = 16, // 'string'
-        GROUP_SECTION_OTHER_OUTER = 17, // "[string]"
-        GROUP_SECTION_OTHER_INNER = 18, // "[string]"
-        GROUP_SECTION_MAIN        = 20, // "[]"
+        GROUP_SECTION_OTHER_OUTER = 17, // [string]
+        GROUP_SECTION_OTHER_INNER = 18, // string
+        GROUP_SECTION_MAIN        = 20, // []
     }
 
     static Config config;
@@ -86,7 +89,7 @@ private:
             else if (match[group][0] == '\'')
                 group = GROUP_VALUE_3;
 
-            this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PROPERTY], match[group]));
+            this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PARAMETER], match[group]));
         }
 
         try {
@@ -121,6 +124,8 @@ public:
      * Read the configuration file
      * Params:
      *   path = the path to the configuration file
+     *   configName = a specific name to bind to the configuration file (default file name)
+     * Returns: `true` if the file was read successfully
      */
     bool read(string path, string configName = "")
     {
@@ -135,9 +140,11 @@ public:
     }
 
     /** 
-     * Get the section
+     * Accessing the read configuration file
      * Params:
-     *   section = section name (default main "[]")
+     *   configName = specific name to bind to the configuration file
+     *   (if the read files are > 1, then specify a specific name, otherwise default file name)
+     * Returns: configuration file object ConfigFile
      */
     @property ConfigFile configFile(string configName = "")
     {
@@ -152,12 +159,12 @@ public:
         return configName in configs ? configs[configName] : ConfigFile(configName);
     }
 
-     /** 
-     * Config file
-     *
-     * Get the config file
+    /** 
+     * Get the read configuration file
      * Params:
-     *   configName = config name (by default the name of the configuration file)
+     *   configName = specific name to bind to the configuration file
+     *   (if the read files are > 1, then specify a specific name, otherwise default file name)
+     * Returns: configuration file object ConfigFile
      */
     alias cf = configFile;
 
@@ -189,7 +196,8 @@ struct ConfigFile
     /** 
      * Get the section
      * Params:
-     *   section = section name (default main "[]")
+     *   section = section name (default main section)
+     * Returns: the object of the configuration file section ConfigSection
      */
     @property ConfigSection sectionName(string section = mainSection)
     {
@@ -203,11 +211,10 @@ struct ConfigFile
     }
 
      /** 
-     * Section name
-     *
      * Get the section
      * Params:
-     *   section = section name (default main "[]")
+     *   section = section name (default main section)
+     * Returns: the object of the configuration file section ConfigSection
      */
     alias sn = sectionName;
 
@@ -249,7 +256,7 @@ struct ConfigSection
      * Get the parameter value
      * Params:
      *   key = parameter from the configuration file
-     * Returns: the value of the parameter in the PP structure view
+     * Returns: the object of the parameter ConfigParameter
      */
     ConfigParameter key(string key)
     {
@@ -262,7 +269,7 @@ struct ConfigSection
 
     /** 
      * Get all keys and their values
-     * Returns: collection of properties structures PP
+     * Returns: collection of parameters
      */
     ConfigParameter[string] keys()
     {
@@ -286,9 +293,6 @@ struct ConfigSection
     }
 }
 
-/** 
- * Parameter and its value with the ability to convert to the desired data type
- */
 struct ConfigParameter
 {
     private string property;

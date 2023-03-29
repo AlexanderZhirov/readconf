@@ -5,9 +5,10 @@
 <h1 align="center">readconf</h1>
 
 [![license](https://img.shields.io/github/license/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=green)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
-[![main](https://img.shields.io/badge/dynamic/json.svg?label=git.zhirov.kz&style=for-the-badge&url=https://git.zhirov.kz/api/v1/repos/dlang/readconf/tags&query=$[0].name&color=violet)](https://git.zhirov.kz/dlang/readconf)
-[![githab](https://img.shields.io/github/v/tag/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=blue&label=github)](https://github.com/AlexanderZhirov/readconf)
-[![dub](https://img.shields.io/dub/v/readconf.svg?sort=semver&style=for-the-badge&color=orange)](https://code.dlang.org/packages/readconf)
+[![main](https://img.shields.io/badge/dynamic/json.svg?label=git.zhirov.kz&style=for-the-badge&url=https://git.zhirov.kz/api/v1/repos/dlang/readconf/tags&query=$[0].name&color=violet&logo=D)](https://git.zhirov.kz/dlang/readconf)
+[![githab](https://img.shields.io/github/v/tag/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=blue&label=github&logo=D)](https://github.com/AlexanderZhirov/readconf)
+[![dub](https://img.shields.io/dub/v/readconf.svg?sort=semver&style=for-the-badge&color=orange&logo=D)](https://code.dlang.org/packages/readconf)
+[![linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://www.linux.org/)
 
 Singleton for reading the configuration file required for your program.
 
