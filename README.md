@@ -27,7 +27,7 @@ The `settings.conf` file (see the [tests](tests/)):
 
 ![matches.png](img/matches.png)
 
-Read `./tests/settings.conf` file:
+Read `settings.conf` file:
 
 ```d
 import readconf;
@@ -63,6 +63,20 @@ text without quotes
 value1 => this value will be in the new section
 value3 => good value!
 this value will be in the new section
+```
+
+## Unittests
+
+The unittests provide [examples](examples/) of configuration files and the `settings.conf` file located in the [tests](tests/):
+
+```sh
+Running bin/readconf-test-unittest 
+ ✓ test __unittest_L4_C1
+ ✓ test __unittest_L106_C1
+ ✓ test __unittest_L25_C1
+ ✓ test __unittest_L51_C1
+
+Summary: 4 passed, 0 failed in 7 ms
 ```
 
 ## DUB
