@@ -7,27 +7,32 @@ import std.meta;
 import singlog;
 
 /** 
- * Read config object
+ * **Get an object to read the configuration file**
+ * 
+ * - The `read()` will allow you to read the configuration file
+ * - `cf()` or `configFile()` will allow you to refer to the read file to get the parameters
  */
 alias rc = Config.file;
+
+private const string mainSection = "[]";
 
 class Config
 {
 private:
     enum {
-        GROUP_PROPERTY            = 4,
+        GROUP_PARAMETER           = 4,
         GROUP_VALUE_1             = 11, // string
         GROUP_VALUE_2             = 14, // "strin"
         GROUP_VALUE_3             = 16, // 'string'
-        GROUP_SECTION_OTHER_OUTER = 17, // "[string]"
-        GROUP_SECTION_OTHER_INNER = 18, // "[string]"
-        GROUP_SECTION_MAIN        = 20, // "[]"
+        GROUP_SECTION_OTHER_OUTER = 17, // [string]
+        GROUP_SECTION_OTHER_INNER = 18, // string
+        GROUP_SECTION_MAIN        = 20, // []
     }
 
     static Config config;
     string path;
     bool readed = false;
-    ConfigSection[string] sections;
+    ConfigFile[string] configs;
 
     const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
         ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
@@ -37,61 +42,63 @@ private:
     /** 
      * Reading the configuration file
      */
-    bool readConfig()
+    bool readConfig(const string configName)
     {
         File configuration;
 
         try {
             configuration = File(this.path, "r");
         } catch (Exception e) {
-            Log.msg.warning("Unable to open the configuration file " ~ this.path);
-            Log.msg.error(e);
+            log.w("Unable to open the configuration file " ~ this.path);
+            log.e(e);
             return false;
         }
+
+        if (configName !in this.configs)
+            this.configs[configName] = ConfigFile(configName);
 
         auto regular = regex(this.pattern, "m");
 
         // reading from the main section
-        string sectionName = "[]";
+        string sectionName = mainSection;
 
         while (!configuration.eof())
         {
             string line = configuration.readln();
             auto match = matchFirst(line, regular);
-            if (match)
+
+            if (match.length == 0)
+                continue;
+            
+            // if again main section
+            if (match[GROUP_SECTION_MAIN].length)
             {
-                // if again main section
-                if (match[GROUP_SECTION_MAIN].length)
-                {
-                    sectionName = match[GROUP_SECTION_MAIN];
-                    continue;
-                }
-                if (match[GROUP_SECTION_OTHER_OUTER].length)
-                {
-                    sectionName = match[GROUP_SECTION_OTHER_INNER];
-                    continue;
-                }
-
-                int group = GROUP_VALUE_1;
-
-                if (match[group][0] == '\"')
-                    group = GROUP_VALUE_2;
-                else if (match[group][0] == '\'')
-                    group = GROUP_VALUE_3;
-
-                if (sectionName !in this.sections)
-                    this.sections[sectionName] = ConfigSection(sectionName);
-                
-                this.sections[sectionName].add(ConfigParameter(match[GROUP_PROPERTY], match[group]));
+                sectionName = match[GROUP_SECTION_MAIN];
+                continue;
             }
+            if (match[GROUP_SECTION_OTHER_OUTER].length)
+            {
+                sectionName = match[GROUP_SECTION_OTHER_INNER];
+                continue;
+            }
+
+            int group = GROUP_VALUE_1;
+
+            if (match[group][0] == '\"')
+                group = GROUP_VALUE_2;
+            else if (match[group][0] == '\'')
+                group = GROUP_VALUE_3;
+
+            this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PARAMETER], match[group]));
         }
 
         try {
             configuration.close();
             this.readed = true;
         } catch (Exception e) {
-            Log.msg.warning("Unable to close the configuration file " ~ this.path);
-            Log.msg.error(e);
+            log.w("Unable to close the configuration file " ~ this.path);
+            log.e(e);
+            this.configs.remove(configName);
             this.readed = false;
         }
 
@@ -117,38 +124,123 @@ public:
      * Read the configuration file
      * Params:
      *   path = the path to the configuration file
+     *   configName = a specific name to bind to the configuration file (default file name)
+     * Returns: `true` if the file was read successfully
      */
-    bool read(string path)
+    bool read(string path, string configName = "")
     {
         this.path = path;
         if (!path.exists)
             throw new Exception("The configuration file does not exist: " ~ path);
-        return readConfig();
+        if (configName.length == 0)
+            configName = path.baseName();
+        if (configName in configs)
+            throw new Exception("The configuration file with this name has already been read");
+        return readConfig(configName);
+    }
+
+    /** 
+     * Accessing the read configuration file
+     * Params:
+     *   configName = specific name to bind to the configuration file
+     *   (if the read files are > 1, then specify a specific name, otherwise default file name)
+     * Returns: configuration file object ConfigFile
+     */
+    @property ConfigFile configFile(string configName = "")
+    {
+        if (configName.length == 0)
+        {
+            if (configs.length == 1)
+                return configs[configs.byKey.front];
+            else
+                throw new Exception("You must explicitly specify the name of the configuration file");
+        }
+
+        return configName in configs ? configs[configName] : ConfigFile(configName);
+    }
+
+    /** 
+     * Get the read configuration file
+     * Params:
+     *   configName = specific name to bind to the configuration file
+     *   (if the read files are > 1, then specify a specific name, otherwise default file name)
+     * Returns: configuration file object ConfigFile
+     */
+    alias cf = configFile;
+
+    @property ConfigFile opIndex(string configName = "")
+    {
+        if (configName.length == 0)
+        {
+            if (configs.length == 1)
+                return configs[configs.byKey.front];
+            else
+                throw new Exception("More than one configuration file has been read. "
+                    ~ "It is necessary to specify the name of a specific");
+        }
+
+        return configName in configs ? configs[configName] : ConfigFile(configName);
+    }
+}
+
+struct ConfigFile
+{
+    private string name;
+    private ConfigSection[string] sections;
+
+    @property bool exist()
+    {
+        return this.sections.length > 0;
     }
 
     /** 
      * Get the section
      * Params:
-     *   section = section name (default main "[]")
+     *   section = section name (default main section)
+     * Returns: the object of the configuration file section ConfigSection
      */
-    @property ConfigSection sectionName(string section = "[]")
+    @property ConfigSection sectionName(string section = mainSection)
     {
-        return section in sections ? sections[section] : ConfigSection();
+        if (!this.exist)
+            throw new Exception("The configuration file does not exist");
+        if (section == mainSection && sections.length == 1)
+            return sections[sections.byKey.front];
+        if (section.length == 0)
+            section = mainSection;
+        return section in sections ? sections[section] : ConfigSection(section);
     }
 
      /** 
-     * Section name
-     *
      * Get the section
      * Params:
-     *   section = section name (default main "[]")
+     *   section = section name (default main section)
+     * Returns: the object of the configuration file section ConfigSection
      */
     alias sn = sectionName;
+
+    private void add(string sectionName, ConfigParameter parameter)
+    {
+        if (sectionName !in this.sections)
+            this.sections[sectionName] = ConfigSection(sectionName);
+
+        this.sections[sectionName].add(parameter);
+    }
+
+    @property ConfigSection opIndex(string section = mainSection)
+    {
+        if (!this.exist)
+            throw new Exception("The configuration file does not exist");
+        if (section == mainSection && sections.length == 1)
+            return sections[sections.byKey.front];
+        if (section.length == 0)
+            section = mainSection;
+        return section in sections ? sections[section] : ConfigSection(section);
+    }
 }
 
 struct ConfigSection
 {
-    private string name = "[]";
+    private string name = mainSection;
     private ConfigParameter[string] parameters;
 
     /** 
@@ -164,16 +256,20 @@ struct ConfigSection
      * Get the parameter value
      * Params:
      *   key = parameter from the configuration file
-     * Returns: the value of the parameter in the PP structure view
+     * Returns: the object of the parameter ConfigParameter
      */
     ConfigParameter key(string key)
     {
-        return key in this.parameters ? this.parameters[key] : ConfigParameter();
+        if (key.length == 0)
+            throw new Exception("The key cannot be empty");
+        if (this.empty)
+            throw new Exception("The selected section has no parameters or does not exist");
+        return key in this.parameters ? this.parameters[key] : ConfigParameter(key);
     }
 
     /** 
      * Get all keys and their values
-     * Returns: collection of properties structures PP
+     * Returns: collection of parameters
      */
     ConfigParameter[string] keys()
     {
@@ -183,14 +279,20 @@ struct ConfigSection
     private void add(ConfigParameter parameter)
     {
         if (parameter.property in parameters)
-            Log.msg.warning("The parameter exists but will be overwritten");
+            log.w("The parameter exists but will be overwritten");
         this.parameters[parameter.property] = parameter;
+    }
+
+    ConfigParameter opIndex(string key)
+    {
+        if (key.length == 0)
+            throw new Exception("The key cannot be empty");
+        if (this.empty)
+            throw new Exception("The selected section has no parameters or does not exist");
+        return key in this.parameters ? this.parameters[key] : ConfigParameter(key);
     }
 }
 
-/** 
- * Parameter and its value with the ability to convert to the desired data type
- */
 struct ConfigParameter
 {
     private string property;
@@ -202,7 +304,7 @@ struct ConfigParameter
      */
     @property bool empty()
     {
-        return this.property.length == 0 || this.value.length == 0;
+        return this.value.length == 0;
     }
 
     /** 
@@ -221,8 +323,8 @@ struct ConfigParameter
         try {
             return this.value.to!T;
         } catch (Exception e) {
-            Log.msg.warning("Cannot convert type");
-            Log.msg.error(e);
+            log.w("Cannot convert type");
+            log.e(e);
             return T.init;
         }            
     }

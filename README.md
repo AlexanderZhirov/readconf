@@ -1,13 +1,25 @@
-# readconf
+<p align="center">
+    <img src="img/logo.png" width=320>
+</p>
+
+<h1 align="center">readconf</h1>
+
+[![license](https://img.shields.io/github/license/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=green)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+[![main](https://img.shields.io/badge/dynamic/json.svg?label=git.zhirov.kz&style=for-the-badge&url=https://git.zhirov.kz/api/v1/repos/dlang/readconf/tags&query=$[0].name&color=violet&logo=D)](https://git.zhirov.kz/dlang/readconf)
+[![githab](https://img.shields.io/github/v/tag/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=blue&label=github&logo=D)](https://github.com/AlexanderZhirov/readconf)
+[![dub](https://img.shields.io/dub/v/readconf.svg?sort=semver&style=for-the-badge&color=orange&logo=D)](https://code.dlang.org/packages/readconf)
+[![linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://www.linux.org/)
 
 Singleton for reading the configuration file required for your program.
 
 ## What can do
 
-1. Separation of parameter and value by separators `=` and `=>`
-2. Commenting on lines using special characters `;`, `#`, `//`, `/*`
-3. Support for sections for describing parameter blocks (sections are set by the name in `[]`)
-4. Support for spaces and tabs for visual separation
+- Reading multiple configuration files
+- Separation of parameters by sections
+- Access to parameters and sections using keys and indexes
+- Commenting on lines
+
+You will get more detailed information on the [wiki](https://git.zhirov.kz/dlang/readconf/wiki).
 
 ## Quick start
 
@@ -23,7 +35,7 @@ import std.stdio;
 
 void main()
 {
-    rc.read("./settings.conf");
+    rc.read("./tests/settings.conf");
 
     foreach (key, param; rc.sn.keys())
         writefln("%s => %s", key, param);
@@ -33,7 +45,7 @@ void main()
     foreach (key, param; rc.sn("part2").keys())
         writefln("%s => %s", key, param);
 
-    writeln(rc.sn("part2").key("value1"));
+    writeln(rc["part2"]["value1"]);
 }
 ```
 
@@ -53,6 +65,20 @@ value3 => good value!
 this value will be in the new section
 ```
 
-## Dub
+## Unittests
 
-Add a dependency on `"readconf": "~>0.2.0"`
+The unittests provide [examples](examples/) of configuration files and the `settings.conf` file located in the [tests](tests/):
+
+```sh
+Running bin/readconf-test-unittest 
+ ✓ test __unittest_L4_C1
+ ✓ test __unittest_L106_C1
+ ✓ test __unittest_L25_C1
+ ✓ test __unittest_L51_C1
+
+Summary: 4 passed, 0 failed in 7 ms
+```
+
+## DUB
+
+Add a dependency on `"readconf": "~>0.3.0"`
