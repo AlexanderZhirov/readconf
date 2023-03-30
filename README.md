@@ -14,10 +14,12 @@ Singleton for reading the configuration file required for your program.
 
 ## What can do
 
-1. Separation of parameter and value by separators `=` and `=>`
-2. Commenting on lines using special characters `;`, `#`, `//`, `/*`
-3. Support for sections for describing parameter blocks (sections are set by the name in `[]`)
-4. Support for spaces and tabs for visual separation
+- Reading multiple configuration files
+- Separation of parameters by sections
+- Access to parameters and sections using keys and indexes
+- Commenting on lines
+
+You will get more detailed information on the [wiki](https://git.zhirov.kz/dlang/readconf/wiki).
 
 ## Quick start
 
@@ -25,7 +27,7 @@ The `settings.conf` file (see the [tests](tests/)):
 
 ![matches.png](img/matches.png)
 
-Read `settings.conf` file:
+Read `./tests/settings.conf` file:
 
 ```d
 import readconf;
@@ -33,7 +35,7 @@ import std.stdio;
 
 void main()
 {
-    rc.read("./settings.conf");
+    rc.read("./tests/settings.conf");
 
     foreach (key, param; rc.sn.keys())
         writefln("%s => %s", key, param);
@@ -43,7 +45,7 @@ void main()
     foreach (key, param; rc.sn("part2").keys())
         writefln("%s => %s", key, param);
 
-    writeln(rc.sn("part2").key("value1"));
+    writeln(rc["part2"]["value1"]);
 }
 ```
 
@@ -63,6 +65,6 @@ value3 => good value!
 this value will be in the new section
 ```
 
-## Dub
+## DUB
 
-Add a dependency on `"readconf": "~>0.2.0"`
+Add a dependency on `"readconf": "~>0.3.0"`
