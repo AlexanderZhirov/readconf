@@ -1,5 +1,13 @@
 # Changelog
 
+## [v0.3.1](https://git.zhirov.kz/dlang/readconf/compare/v0.3.0...v0.3.1) (2023.04.30)
+
+- Windows OS support
+
+### Update
+
+- `singlog` dependency up to v0.3.0
+
 ## [v0.3.0](https://git.zhirov.kz/dlang/readconf/compare/v0.2.0...v0.3.0) (2023.03.30)
 
 ### New
