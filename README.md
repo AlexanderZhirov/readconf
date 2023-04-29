@@ -9,6 +9,7 @@
 [![githab](https://img.shields.io/github/v/tag/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=blue&label=github&logo=D)](https://github.com/AlexanderZhirov/readconf)
 [![dub](https://img.shields.io/dub/v/readconf.svg?sort=semver&style=for-the-badge&color=orange&logo=D)](https://code.dlang.org/packages/readconf)
 [![linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://www.linux.org/)
+[![windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)](https://support.microsoft.com/en-US/windows)
 
 Singleton for reading the configuration file required for your program.
 
