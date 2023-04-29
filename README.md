@@ -1,8 +1,4 @@
-<p align="center">
-    <img src="img/logo.png" width=320>
-</p>
-
-<h1 align="center">readconf</h1>
+![readconf](img/readconf.png)
 
 [![license](https://img.shields.io/github/license/AlexanderZhirov/readconf.svg?sort=semver&style=for-the-badge&color=green)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
 [![main](https://img.shields.io/badge/dynamic/json.svg?label=git.zhirov.kz&style=for-the-badge&url=https://git.zhirov.kz/api/v1/repos/dlang/readconf/tags&query=$[0].name&color=violet&logo=D)](https://git.zhirov.kz/dlang/readconf)
@@ -82,4 +78,4 @@ Summary: 4 passed, 0 failed in 7 ms
 
 ## DUB
 
-Add a dependency on `"readconf": "~>0.3.0"`
+Add a dependency on `"readconf": "~>0.3.1"`
