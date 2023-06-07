@@ -17,22 +17,14 @@
             "name": "unittest",
             "targetPath": "bin",
             "dependencies": {
-                "silly": "~>1.1.1"
+                "silly": "~>1.2.0-dev.2"
             },
-            "importPaths": ["source","tests"],
-            "sourcePaths": ["tests"]
-        },
-        {
-            "name": "executable",
-            "targetType": "executable",
-            "targetPath": "bin",
-            "targetName": "app",
             "importPaths": ["source","tests"],
             "sourcePaths": ["tests"]
         }
     ],
     "targetName": "readconf",
     "dependencies": {
-        "singlog": "~>0.3.0"
+        "singlog": "~>0.4.0"
     }
 }

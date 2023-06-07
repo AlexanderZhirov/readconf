@@ -20,6 +20,7 @@ unittest
     assert(mainSection["parameter-10"] == "value10");
     assert(mainSection.key("parameter11") == "value11");
     assert(mainSection["parameter12_"] == "value12");
+    assert(mainSection["parameter13"].empty);
 }
 
 unittest
@@ -98,9 +99,13 @@ unittest
     assert(comConMaiSec["parameter4"] == "value4");
     assert(comConMaiSec["parameter5"] == "value5;This will not be a comment");
     assert(comConMaiSec["parameter6"] == "value6// This will also be a whole value");
+    assert(comConMaiSec["parameter7"] == "");
+    assert(comConMaiSec["parameter7"].empty);
     assert(comConMaiSec["parameter8"] == "//value8");
     assert(comConMaiSec["parameter9"] == ";value9");
     assert(comConMaiSec["parameter10"] == "\"value10\"");
+    assert(comConMaiSec["parameter11"] == "");
+    assert(comConMaiSec["parameter11"].empty);
 }
 
 unittest
@@ -112,6 +117,7 @@ unittest
     assert(rc.cf.sn.key("value3") == "value in apostrophes");
     assert(rc[][]["value4"] == "1000");
     assert(rc.cf.sn["value5"] == "0.000");
+    assert(rc.cf.sn["value6"].empty);
     assert(rc[][].key("value7") == "//path");
     assert(rc.cf.sn.key("value8") == "\"Hey!\"");
     assert(rc[]["part2"]["value1"] == "this value will be in the new section");
