@@ -21,12 +21,12 @@ class Config
 private:
     enum {
         GROUP_PARAMETER           = 4,
-        GROUP_VALUE_1             = 11, // string
-        GROUP_VALUE_2             = 14, // "strin"
-        GROUP_VALUE_3             = 16, // 'string'
-        GROUP_SECTION_OTHER_OUTER = 17, // [string]
-        GROUP_SECTION_OTHER_INNER = 18, // string
-        GROUP_SECTION_MAIN        = 20, // []
+        GROUP_VALUE_1             = 12, // string
+        GROUP_VALUE_2             = 15, // "strin"
+        GROUP_VALUE_3             = 17, // 'string'
+        GROUP_SECTION_OTHER_OUTER = 19, // [string]
+        GROUP_SECTION_OTHER_INNER = 20, // string
+        GROUP_SECTION_MAIN        = 23, // []
     }
 
     static Config config;
@@ -34,9 +34,9 @@ private:
     bool readed = false;
     ConfigFile[string] configs;
 
-    const string pattern = "^( |\\t)*(((\\w(\\w|-)+)(( |\\t)*(=>|=){1}"
-        ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)\")"
-        ~ "|('(.+)')){1})|(\\[(\\w(\\w|-)+)\\])|(\\[\\]))( |\\t)*"
+    const string pattern = "^( |\\t)*((((\\w(\\w|-)?)+)(( |\\t)*(=>|=){1}"
+        ~ "( |\\t)*)(?!\\/(\\/|\\*))(([^ >\"'=\\n\\t#;].*?)|(\"(.+)?\")"
+        ~ "|('(.+)?')|()){1})|(\\[((\\w(\\w|-)?)+)\\])|(\\[\\]))( |\\t)*"
         ~ "(( |\\t)(#|;|\\/\\/|\\/\\*).*)?$";
 
     /** 
@@ -84,10 +84,12 @@ private:
 
             int group = GROUP_VALUE_1;
 
-            if (match[group][0] == '\"')
-                group = GROUP_VALUE_2;
-            else if (match[group][0] == '\'')
-                group = GROUP_VALUE_3;
+            if (match[group].length) {
+                if (match[group][0] == '\"')
+                    group = GROUP_VALUE_2;
+                else if (match[group][0] == '\'')
+                    group = GROUP_VALUE_3;
+            }
 
             this.configs[configName].add(sectionName, ConfigParameter(match[GROUP_PARAMETER], match[group]));
         }
@@ -207,7 +209,10 @@ struct ConfigFile
             return sections[sections.byKey.front];
         if (section.length == 0)
             section = mainSection;
-        return section in sections ? sections[section] : ConfigSection(section);
+        if (section !in sections)
+            throw new Exception("The selected section does not exist");
+
+        return sections[section];
     }
 
      /** 
@@ -234,7 +239,10 @@ struct ConfigFile
             return sections[sections.byKey.front];
         if (section.length == 0)
             section = mainSection;
-        return section in sections ? sections[section] : ConfigSection(section);
+        if (section !in sections)
+            throw new Exception("The selected section does not exist");
+
+        return sections[section];
     }
 }
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.4.0](https://git.zhirov.kz/dlang/readconf/compare/v0.3.1...v0.4.0) (2023.06.07)
+
+### New
+
+- Reading empty parameter values
+- Parameter name as a single character
+
+### Bug fixes
+
+- Generating an exception when accessing a non-existent section
+
 ## [v0.3.1](https://git.zhirov.kz/dlang/readconf/compare/v0.3.0...v0.3.1) (2023.04.30)
 
 - Windows OS support

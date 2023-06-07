@@ -34,15 +34,15 @@ void main()
 {
     rc.read("./tests/settings.conf");
 
-    foreach (key, param; rc.sn.keys())
+    foreach (key, param; rc.cf.sn.keys())
         writefln("%s => %s", key, param);
 
-    writeln(rc.sn.key("value1"));
+    writeln(rc.cf.sn.key("value1"));
 
-    foreach (key, param; rc.sn("part2").keys())
+    foreach (key, param; rc.cf.sn("part2").keys())
         writefln("%s => %s", key, param);
 
-    writeln(rc["part2"]["value1"]);
+    writeln(rc[]["part2"]["value1"]);
 }
 ```
 
@@ -54,6 +54,7 @@ value2 => Yes!
 value3 => value in apostrophes
 value4 => 1000
 value5 => 0.000
+value6 =>
 value7 => //path
 value8 => "Hey!"
 text without quotes
@@ -68,14 +69,14 @@ The unittests provide [examples](examples/) of configuration files and the `sett
 
 ```sh
 Running bin/readconf-test-unittest 
+ ✓ test __unittest_L111_C1
+ ✓ test __unittest_L26_C1
+ ✓ test __unittest_L52_C1
  ✓ test __unittest_L4_C1
- ✓ test __unittest_L106_C1
- ✓ test __unittest_L25_C1
- ✓ test __unittest_L51_C1
 
 Summary: 4 passed, 0 failed in 7 ms
 ```
 
 ## DUB
 
-Add a dependency on `"readconf": "~>0.3.1"`
+Add a dependency on `"readconf": "~>0.4.0"`
