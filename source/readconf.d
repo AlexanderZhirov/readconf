@@ -334,6 +334,6 @@ struct ConfigParameter
             log.w("Cannot convert type");
             log.e(e);
             return T.init;
-        }            
+        }
     }
 }

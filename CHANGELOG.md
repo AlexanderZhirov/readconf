@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.4.1](https://git.zhirov.kz/dlang/readconf/compare/v0.4.0...v0.4.1) (2024.02.09)
+
+### Update
+
+- `singlog` dependency up to v0.5.0
+
 ## [v0.4.0](https://git.zhirov.kz/dlang/readconf/compare/v0.3.1...v0.4.0) (2023.06.07)
 
 ### New

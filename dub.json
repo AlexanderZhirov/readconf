@@ -25,6 +25,6 @@
     ],
     "targetName": "readconf",
     "dependencies": {
-        "singlog": "~>0.4.0"
+        "singlog": "~>0.5.0"
     }
 }
